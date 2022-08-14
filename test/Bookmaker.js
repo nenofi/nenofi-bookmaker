@@ -39,10 +39,16 @@ describe("Bookmaker", function () {
     await neIDR.deployed();
   });
 
-  it("mint neIDR to user1", async function () {
+  it("mint neIDR to user1, user2, user3", async function () {
     //1jt rupiah
     await neIDR.mint(user1.address, ethers.BigNumber.from("1000000000000000000000000"));
+    await neIDR.mint(user2.address, ethers.BigNumber.from("1000000000000000000000000"));
+    await neIDR.mint(user3.address, ethers.BigNumber.from("1000000000000000000000000"));
+
     expect(await neIDR.balanceOf(user1.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+    expect(await neIDR.balanceOf(user2.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+    expect(await neIDR.balanceOf(user3.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+
   });
 
   it("Deploy Bookmaker", async function () {
@@ -50,19 +56,8 @@ describe("Bookmaker", function () {
     draw = ethers.utils.parseEther("3.4")
     lose = ethers.utils.parseEther("3.2")
 
-    const Bookmaker = await ethers.getContractFactory("Bookmaker")
-    bookmaker = await Bookmaker.deploy(neIDR.address, win, draw, lose)
-    
-    await bookmaker.deployed();
-  });
-
-  it("Deploy Bookmaker", async function () {
-    win = ethers.utils.parseEther("2.25") 
-    draw = ethers.utils.parseEther("3.4")
-    lose = ethers.utils.parseEther("3.2")
-
-    const Bookmaker = await ethers.getContractFactory("Bookmaker")
-    bookmaker = await Bookmaker.deploy(neIDR.address, win, draw, lose)
+    const Bookmaker = await ethers.getContractFactory("BookmakerV01")
+    bookmaker = await Bookmaker.deploy(neIDR.address)
     
     await bookmaker.deployed();
   });
