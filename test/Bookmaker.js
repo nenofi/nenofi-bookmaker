@@ -52,9 +52,9 @@ describe("Bookmaker", function () {
   });
 
   it("Deploy Bookmaker", async function () {
-    win = ethers.utils.parseEther("2.25") 
-    draw = ethers.utils.parseEther("3.4")
-    lose = ethers.utils.parseEther("3.2")
+    // win = ethers.utils.parseEther("2.25") 
+    // draw = ethers.utils.parseEther("3.4")
+    // lose = ethers.utils.parseEther("3.2")
 
     const Bookmaker = await ethers.getContractFactory("BookmakerV01")
     bookmaker = await Bookmaker.deploy(neIDR.address)
@@ -70,119 +70,38 @@ describe("Bookmaker", function () {
     expect(await bookmaker.getUserBet(user1.address, 0)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
   });
 
+  it("User2 make 500k bet on draw", async function () {
+    await neIDR.connect(user2).approve(bookmaker.address, MAX_INT) ;   
+    await bookmaker.connect(user2).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 1);
 
-  // async function deployOneYearLockFixture() {
-  //   const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  //   const ONE_GWEI = 1_000_000_000;
+    expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("1500000000000000000000000"));
+    expect(await bookmaker.getUserBet(user2.address, 1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  });
 
-  //   const lockedAmount = ONE_GWEI;
-  //   const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
+  it("User3 make 500k bet on losing", async function () {
+    await neIDR.connect(user3).approve(bookmaker.address, MAX_INT) ;   
+    await bookmaker.connect(user3).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 2);
 
-  //   // Contracts are deployed using the first signer/account by default
-  //   const [owner, otherAccount] = await ethers.getSigners();
+    expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("2000000000000000000000000"));
+    expect(await bookmaker.getUserBet(user3.address, 2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  });
 
-  //   const Lock = await ethers.getContractFactory("Lock");
-  //   const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  it("check pot for winning", async function () {
+    expect(await bookmaker.getPotPerResult(0)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+  });
 
-  //   return { lock, unlockTime, lockedAmount, owner, otherAccount };
-  // }
+  it("check pot for draw", async function () {
+    expect(await bookmaker.getPotPerResult(1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  });
+  
+  it("check pot for losing", async function () {
+    expect(await bookmaker.getPotPerResult(2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  });
 
-  // describe("Deployment", function () {
-  //   it("Should set the right unlockTime", async function () {
-  //     const { lock, unlockTime } = await loadFixture(deployOneYearLockFixture);
-
-  //     expect(await lock.unlockTime()).to.equal(unlockTime);
-  //   });
-
-  //   it("Should set the right owner", async function () {
-  //     const { lock, owner } = await loadFixture(deployOneYearLockFixture);
-
-  //     expect(await lock.owner()).to.equal(owner.address);
-  //   });
-
-  //   it("Should receive and store the funds to lock", async function () {
-  //     const { lock, lockedAmount } = await loadFixture(
-  //       deployOneYearLockFixture
-  //     );
-
-  //     expect(await ethers.provider.getBalance(lock.address)).to.equal(
-  //       lockedAmount
-  //     );
-  //   });
-
-  //   it("Should fail if the unlockTime is not in the future", async function () {
-  //     // We don't use the fixture here because we want a different deployment
-  //     const latestTime = await time.latest();
-  //     const Lock = await ethers.getContractFactory("Lock");
-  //     await expect(Lock.deploy(latestTime, { value: 1 })).to.be.revertedWith(
-  //       "Unlock time should be in the future"
-  //     );
-  //   });
-  // });
-
-  // describe("Withdrawals", function () {
-  //   describe("Validations", function () {
-  //     it("Should revert with the right error if called too soon", async function () {
-  //       const { lock } = await loadFixture(deployOneYearLockFixture);
-
-  //       await expect(lock.withdraw()).to.be.revertedWith(
-  //         "You can't withdraw yet"
-  //       );
-  //     });
-
-  //     it("Should revert with the right error if called from another account", async function () {
-  //       const { lock, unlockTime, otherAccount } = await loadFixture(
-  //         deployOneYearLockFixture
-  //       );
-
-  //       // We can increase the time in Hardhat Network
-  //       await time.increaseTo(unlockTime);
-
-  //       // We use lock.connect() to send a transaction from another account
-  //       await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWith(
-  //         "You aren't the owner"
-  //       );
-  //     });
-
-  //     it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
-  //       const { lock, unlockTime } = await loadFixture(
-  //         deployOneYearLockFixture
-  //       );
-
-  //       // Transactions are sent using the first signer by default
-  //       await time.increaseTo(unlockTime);
-
-  //       await expect(lock.withdraw()).not.to.be.reverted;
-  //     });
-  //   });
-
-  //   describe("Events", function () {
-  //     it("Should emit an event on withdrawals", async function () {
-  //       const { lock, unlockTime, lockedAmount } = await loadFixture(
-  //         deployOneYearLockFixture
-  //       );
-
-  //       await time.increaseTo(unlockTime);
-
-  //       await expect(lock.withdraw())
-  //         .to.emit(lock, "Withdrawal")
-  //         .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-  //     });
-  //   });
-
-  //   describe("Transfers", function () {
-  //     it("Should transfer the funds to the owner", async function () {
-  //       const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-  //         deployOneYearLockFixture
-  //       );
-
-  //       await time.increaseTo(unlockTime);
-
-  //       await expect(lock.withdraw()).to.changeEtherBalances(
-  //         [owner, lock],
-  //         [lockedAmount, -lockedAmount]
-  //       );
-  //     });
-  //   });
-  // });
+  it("set Winner", async function () {
+    await bookmaker.setRunning(false);
+    await bookmaker.setWinner(0)
+  });
+  
+  
 });
