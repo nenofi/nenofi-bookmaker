@@ -15,7 +15,7 @@ describe("Bookmaker", function () {
   let user1;
   let user2;
   let user3;
-  let bridge;
+  let user4;
   let exploiter;
   let smpc
 
@@ -32,7 +32,7 @@ describe("Bookmaker", function () {
   let lose 
 
   it("Deploy Mock Tokens (neIDR)", async function () {
-    [owner, user1, user2, user3, bridge, exploiter, smpc] = await ethers.getSigners(4);
+    [owner, user1, user2, user3, user4, exploiter, smpc] = await ethers.getSigners(4);
 
     const netoken = await ethers.getContractFactory("MockToken");
     neIDR = await netoken.deploy('neIDR', 'neIDR', 18);
@@ -44,10 +44,12 @@ describe("Bookmaker", function () {
     await neIDR.mint(user1.address, ethers.BigNumber.from("1000000000000000000000000"));
     await neIDR.mint(user2.address, ethers.BigNumber.from("1000000000000000000000000"));
     await neIDR.mint(user3.address, ethers.BigNumber.from("1000000000000000000000000"));
+    await neIDR.mint(user4.address, ethers.BigNumber.from("1000000000000000000000000"));
 
     expect(await neIDR.balanceOf(user1.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
     expect(await neIDR.balanceOf(user2.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
     expect(await neIDR.balanceOf(user3.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+    expect(await neIDR.balanceOf(user4.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
 
   });
 
@@ -86,8 +88,17 @@ describe("Bookmaker", function () {
     expect(await bookmaker.getUserBet(user3.address, 2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
   });
 
+  it("User4 make 500k bet on winning", async function () {
+    await neIDR.connect(user4).approve(bookmaker.address, MAX_INT) ;   
+    await bookmaker.connect(user4).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 0);
+
+    expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("2500000000000000000000000"));
+    expect(await bookmaker.getUserBet(user4.address, 0)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  });
+
+
   it("check pot for winning", async function () {
-    expect(await bookmaker.getPotPerResult(0)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+    expect(await bookmaker.getPotPerResult(0)).to.equal(ethers.BigNumber.from("1500000000000000000000000"));
   });
 
   it("check pot for draw", async function () {
@@ -101,6 +112,15 @@ describe("Bookmaker", function () {
   it("set Winner", async function () {
     await bookmaker.setRunning(false);
     await bookmaker.setWinner(0)
+  });
+
+  it("claim Winnings", async function () {
+    await bookmaker.connect(user1).claimWinnings();
+    await bookmaker.connect(user2).claimWinnings();
+    await bookmaker.connect(user3).claimWinnings();
+    await bookmaker.connect(user4).claimWinnings();
+
+
   });
   
   

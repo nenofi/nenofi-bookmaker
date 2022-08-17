@@ -39,6 +39,7 @@ contract BookmakerV01 {
         IERC20(_betToken).transferFrom(msg.sender, address(this), _amount);
         userBet[msg.sender][_result] += _amount;
         potPerResult[_result] += _amount;
+        totalPot += _amount;
     }
 
     function getTotalPot() external view returns (uint256){
@@ -49,19 +50,23 @@ contract BookmakerV01 {
         require(running == false, "BOOKMAKER: GAME HAS NOT ENDED");
         winner = _winner;
         for(uint i=0; i < potPerResult.length; i++){
-            console.log(i);
-            console.log(potPerResult[i]);
+            // console.log(potPerResult[i]);
             if(i!=winner){
                 losersPot += potPerResult[i];
             }
         }
-        console.log(losersPot);
+        // console.log(losersPot);
     }
 
     function claimWinnings() external {
         require(userBet[msg.sender][winner] >= 0, "BOOKMAKER: USER HAS NOTHING TO CLAIM");
-
-
+        // console.log(losersPot);
+        // console.log(potPerResult[winner]);
+        // console.log(100*losersPot/potPerResult[winner]);
+        uint256 userWinnings = losersPot * userBet[msg.sender][winner] / potPerResult[winner];
+        console.log(userWinnings + userBet[msg.sender][winner]);
+        IERC20(betToken).transfer(msg.sender, userWinnings + userBet[msg.sender][winner]);
+        // console.log(totalPot);
     }
 
     function getUserBet(address _address, uint256 _result) external view returns (uint256){
