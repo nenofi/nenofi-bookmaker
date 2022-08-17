@@ -3,11 +3,9 @@ pragma solidity ^0.8.4;
 
 // Import this file to use console.log
 import "hardhat/console.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BookmakerV01 {
-    using SafeMath for uint256;
 
     address public betToken;
 
@@ -16,8 +14,10 @@ contract BookmakerV01 {
 
     uint256 public totalPot;
     uint256 public losersPot;
+    uint256 public fee;
     uint256[3] public potPerResult;
     uint8 public winner; // 0 to bet for a win, 1 to bet for a draw, 2 to bet for a loss
+
 
     address public admin;
 
@@ -50,23 +50,20 @@ contract BookmakerV01 {
         require(running == false, "BOOKMAKER: GAME HAS NOT ENDED");
         winner = _winner;
         for(uint i=0; i < potPerResult.length; i++){
-            // console.log(potPerResult[i]);
             if(i!=winner){
                 losersPot += potPerResult[i];
             }
         }
-        // console.log(losersPot);
+        fee = losersPot*5/100;
+        losersPot -= fee;
     }
 
     function claimWinnings() external {
-        require(userBet[msg.sender][winner] >= 0, "BOOKMAKER: USER HAS NOTHING TO CLAIM");
-        // console.log(losersPot);
-        // console.log(potPerResult[winner]);
-        // console.log(100*losersPot/potPerResult[winner]);
+        require(userBet[msg.sender][winner] > 0, "BOOKMAKER: USER HAS NOTHING TO CLAIM");
+        require(running == false, "BOOKMAKER: GAME HAS NOT ENDED");
+
         uint256 userWinnings = losersPot * userBet[msg.sender][winner] / potPerResult[winner];
-        console.log(userWinnings + userBet[msg.sender][winner]);
         IERC20(betToken).transfer(msg.sender, userWinnings + userBet[msg.sender][winner]);
-        // console.log(totalPot);
     }
 
     function getUserBet(address _address, uint256 _result) external view returns (uint256){
@@ -79,5 +76,13 @@ contract BookmakerV01 {
 
     function setRunning(bool _running) external onlyAdmin{
         running = _running;
+    }
+
+    function claimFee() external onlyAdmin{
+        IERC20(betToken).transfer(admin, fee);
+    }
+
+    function emergencyWithdraw(address _token, uint256 _amount) external onlyAdmin{
+        IERC20(_token).transfer(admin, _amount);
     }
 }

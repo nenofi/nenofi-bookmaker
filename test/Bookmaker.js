@@ -8,7 +8,7 @@ const { expect } = require("chai");
 const { AbiCoder } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
 
-describe("Bookmaker", function () {
+describe("BookmakerV01 Tests", function () {
 
 
   let owner;
@@ -53,7 +53,7 @@ describe("Bookmaker", function () {
 
   });
 
-  it("Deploy Bookmaker", async function () {
+  it("Deploy BookmakerV01", async function () {
     // win = ethers.utils.parseEther("2.25") 
     // draw = ethers.utils.parseEther("3.4")
     // lose = ethers.utils.parseEther("3.2")
@@ -114,14 +114,20 @@ describe("Bookmaker", function () {
     await bookmaker.setWinner(0)
   });
 
+  it("check Bookmaker fee Winner", async function () {
+    expect(await bookmaker.fee()).to.be.equal(ethers.BigNumber.from("50000000000000000000000"));
+  });
+
   it("claim Winnings", async function () {
     await bookmaker.connect(user1).claimWinnings();
-    await bookmaker.connect(user2).claimWinnings();
-    await bookmaker.connect(user3).claimWinnings();
+    expect(await neIDR.balanceOf(user1.address)).to.be.equal(ethers.BigNumber.from("1633333333333333333333333"))
+    // console.log(await neIDR.balanceOf(user1.address));
+    await expect(bookmaker.connect(user2).claimWinnings()).to.be.reverted;
+    await expect(bookmaker.connect(user3).claimWinnings()).to.be.reverted;
     await bookmaker.connect(user4).claimWinnings();
-
+    // console.log(await neIDR.balanceOf(user4.address))
+    expect(await neIDR.balanceOf(user4.address)).to.be.equal(ethers.BigNumber.from("1316666666666666666666666"))
 
   });
-  
-  
 });
+
