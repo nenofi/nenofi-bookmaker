@@ -35,7 +35,8 @@ contract BookmakerV01 {
     }
 
     function bet(address _betToken, uint256 _amount, uint _result) external{
-        require(running == true, "BOOKMAKER: BET HAS ENDED");
+        require(_betToken == betToken, "BOOKMAKER: YOUR TOKEN AREN'T ACCEPTED");
+        require(running == true, "BOOKMAKER: GAME HAS ENDED");
         IERC20(_betToken).transferFrom(msg.sender, address(this), _amount);
         userBet[msg.sender][_result] += _amount;
         potPerResult[_result] += _amount;
