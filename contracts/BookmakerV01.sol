@@ -1,8 +1,6 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-// Import this file to use console.log
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BookmakerV01 {
@@ -22,6 +20,7 @@ contract BookmakerV01 {
     address public admin;
 
     bool public running;
+    bool public claimable;
  
     modifier onlyAdmin(){
         require(msg.sender == admin, "BOOKMAKER: NOT ADMIN");
@@ -32,6 +31,7 @@ contract BookmakerV01 {
         admin = msg.sender;
         betToken = _betToken;
         running = true;
+        claimable = false;
     }
 
     function bet(address _betToken, uint256 _amount, uint _result) external{
@@ -62,6 +62,7 @@ contract BookmakerV01 {
     function claimWinnings() external {
         require(userBet[msg.sender][winner] > 0, "BOOKMAKER: USER HAS NOTHING TO CLAIM");
         require(running == false, "BOOKMAKER: GAME HAS NOT ENDED");
+        require(claimable == true, "BOOKMAKER: STATE IS NOT CLAIMABLE");
 
         uint256 userWinnings = losersPot * userBet[msg.sender][winner] / potPerResult[winner];
         IERC20(betToken).transfer(msg.sender, userWinnings + userBet[msg.sender][winner]);
@@ -79,6 +80,10 @@ contract BookmakerV01 {
         running = _running;
     }
 
+    function setClaimable(bool _claimable) external onlyAdmin{
+        claimable = _claimable;
+    }
+
     function claimFee() external onlyAdmin{
         IERC20(betToken).transfer(admin, fee);
     }
@@ -86,4 +91,5 @@ contract BookmakerV01 {
     function emergencyWithdraw(address _token, uint256 _amount) external onlyAdmin{
         IERC20(_token).transfer(admin, _amount);
     }
+    
 }

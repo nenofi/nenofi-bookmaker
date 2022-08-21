@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 // Import this file to use console.log
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
