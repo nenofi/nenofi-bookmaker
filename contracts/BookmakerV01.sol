@@ -22,6 +22,9 @@ contract BookmakerV01 {
     bool public running;
     bool public claimable;
  
+    event LogBet(address indexed better, uint256 amount, uint result);
+    event LogClaim(address indexed claimer, uint256 amount);
+
     modifier onlyAdmin(){
         require(msg.sender == admin, "BOOKMAKER: NOT ADMIN");
         _;
@@ -41,6 +44,8 @@ contract BookmakerV01 {
         userBet[msg.sender][_result] += _amount;
         potPerResult[_result] += _amount;
         totalPot += _amount;
+
+        emit LogBet(msg.sender, _amount, _result);
     }
 
     function getTotalPot() external view returns (uint256){
@@ -66,6 +71,9 @@ contract BookmakerV01 {
 
         uint256 userWinnings = losersPot * userBet[msg.sender][winner] / potPerResult[winner];
         IERC20(betToken).transfer(msg.sender, userWinnings + userBet[msg.sender][winner]);
+        userBet[msg.sender][winner] = 0;
+
+        emit LogClaim(msg.sender, userWinnings);
     }
 
     function getUserBet(address _address, uint256 _result) external view returns (uint256){
