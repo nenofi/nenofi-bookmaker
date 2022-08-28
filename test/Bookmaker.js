@@ -59,7 +59,9 @@ describe("BookmakerV01 Tests", function () {
     // lose = ethers.utils.parseEther("3.2")
 
     const Bookmaker = await ethers.getContractFactory("BookmakerV01")
-    bookmaker = await Bookmaker.deploy(neIDR.address)
+    bookmaker = await Bookmaker.deploy(neIDR.address, 1671708845)
+    // bookmaker = await Bookmaker.deploy(neIDR.address, 1661709562) //tests will fail
+
     
     await bookmaker.deployed();
   });
@@ -110,7 +112,6 @@ describe("BookmakerV01 Tests", function () {
   });
 
   it("set Winner", async function () {
-    await bookmaker.setRunning(false);
     await bookmaker.setClaimable(true);
     await bookmaker.setWinner(0)
   });

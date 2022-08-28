@@ -2,24 +2,21 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
 
 contract BookmakerV01 {
-
+    address public admin;
     address public betToken;
 
-    mapping(address => mapping(uint256 => uint256)) userBet; //maps address to result to stake. Represents the shares of the stakes if the address wins
-    // mapping(uint256=>uint256) totalPotPerResult;
+    mapping(address => mapping(uint8 => uint256)) userBet; //maps address to result to stake. Represents the shares of the stakes if the address wins
 
     uint256 public totalPot;
     uint256 public losersPot;
     uint256 public fee;
     uint256[3] public potPerResult;
+    uint256 public gameStarts;
     uint8 public winner; // 0 to bet for a win, 1 to bet for a draw, 2 to bet for a loss
 
-
-    address public admin;
-
-    bool public running;
     bool public claimable;
  
     event LogBet(address indexed better, uint256 amount, uint result);
@@ -30,16 +27,16 @@ contract BookmakerV01 {
         _;
     }
 
-    constructor(address _betToken){
+    constructor(address _betToken, uint256 _gameStarts){
         admin = msg.sender;
         betToken = _betToken;
-        running = true;
+        gameStarts = _gameStarts;
         claimable = false;
     }
 
-    function bet(address _betToken, uint256 _amount, uint _result) external{
+    function bet(address _betToken, uint256 _amount, uint8 _result) external{
         require(_betToken == betToken, "BOOKMAKER: YOUR TOKEN AREN'T ACCEPTED");
-        require(running == true, "BOOKMAKER: GAME HAS ENDED");
+        require(block.timestamp < gameStarts, "BOOKMAKER: BETS ARE NOT ACCEPTED");
         IERC20(_betToken).transferFrom(msg.sender, address(this), _amount);
         userBet[msg.sender][_result] += _amount;
         potPerResult[_result] += _amount;
@@ -53,7 +50,7 @@ contract BookmakerV01 {
     }
 
     function setWinner(uint8 _winner) external onlyAdmin{
-        require(running == false, "BOOKMAKER: GAME HAS NOT ENDED");
+        require(block.timestamp < gameStarts, "BOOKMAKER: GAME HAS NOT STARTED");
         winner = _winner;
         for(uint i=0; i < potPerResult.length; i++){
             if(i!=winner){
@@ -66,7 +63,6 @@ contract BookmakerV01 {
 
     function claimWinnings() external {
         require(userBet[msg.sender][winner] > 0, "BOOKMAKER: USER HAS NOTHING TO CLAIM");
-        require(running == false, "BOOKMAKER: GAME HAS NOT ENDED");
         require(claimable == true, "BOOKMAKER: STATE IS NOT CLAIMABLE");
 
         uint256 userWinnings = losersPot * userBet[msg.sender][winner] / potPerResult[winner];
@@ -76,16 +72,12 @@ contract BookmakerV01 {
         emit LogClaim(msg.sender, userWinnings);
     }
 
-    function getUserBet(address _address, uint256 _result) external view returns (uint256){
+    function getUserBet(address _address, uint8 _result) external view returns (uint256){
         return userBet[_address][_result];
     }
 
     function getPotPerResult(uint8 _result) external view returns (uint256){
         return potPerResult[_result];
-    }
-
-    function setRunning(bool _running) external onlyAdmin{
-        running = _running;
     }
 
     function setClaimable(bool _claimable) external onlyAdmin{
