@@ -59,7 +59,7 @@ describe("BookmakerV01 Tests", function () {
     // lose = ethers.utils.parseEther("3.2")
 
     const Bookmaker = await ethers.getContractFactory("BookmakerV01")
-    bookmaker = await Bookmaker.deploy(neIDR.address, 1671708845)
+    bookmaker = await Bookmaker.deploy(neIDR.address, 1662305400)
     // bookmaker = await Bookmaker.deploy(neIDR.address, 1661709562) //tests will fail
 
     
