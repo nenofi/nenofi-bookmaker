@@ -49,7 +49,7 @@ contract BookmakerV01 {
     }
 
     function setWinner(uint8 _winner) external onlyAdmin{
-        require(block.timestamp < gameStarts, "BOOKMAKER: GAME HAS NOT STARTED");
+        require(block.timestamp > gameStarts, "BOOKMAKER: GAME HAS NOT STARTED");
         winner = _winner;
         for(uint i=0; i < potPerResult.length; i++){
             if(i!=winner){
