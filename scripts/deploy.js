@@ -10,24 +10,9 @@ const {ethers} = require("hardhat");
 
 async function main() {
   
-  // const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  // const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  // const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
-
-  // const lockedAmount = hre.ethers.utils.parseEther("1");
-
-  // const Lock = await hre.ethers.getContractFactory("Lock");
-  // const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
-
   // await lock.deployed();
   const [deployer] = await ethers.getSigners();
 
-
-  // console.log("Lock with 1 ETH deployed to:", lock.address);
-  // const MAX_INT = ethers.constants.MaxUint256;
-  // let win = ethers.utils.parseEther("2.25")
-  // let draw = ethers.utils.parseEther("3.4")
-  // let lose = ethers.utils.parseEther("3.2")
 
   // const NEIDR = await ethers.getContractFactory("MockToken")
   // const neidr = await NEIDR.deploy("neIDR", "neIDR", 18);
