@@ -35,7 +35,7 @@ contract Bookmaker2V01 {
 
     function bet(address _betToken, uint256 _amount, uint8 _result) external{
         require(_betToken == betToken, "BOOKMAKER: YOUR TOKEN AREN'T ACCEPTED");
-        // require(block.timestamp < gameStarts, "BOOKMAKER: BETS ARE NOT ACCEPTED");
+        require(block.timestamp < gameStarts, "BOOKMAKER: BETS ARE NOT ACCEPTED");
         IERC20(_betToken).transferFrom(msg.sender, address(this), _amount);
         userBet[msg.sender][_result] += _amount;
         potPerResult[_result] += _amount;
@@ -49,7 +49,7 @@ contract Bookmaker2V01 {
     }
 
     function setWinner(uint8 _winner) external onlyAdmin{
-        // require(block.timestamp > gameStarts, "BOOKMAKER: GAME HAS NOT STARTED");
+        require(block.timestamp > gameStarts, "BOOKMAKER: GAME HAS NOT STARTED");
         winner = _winner;
         for(uint i=0; i < potPerResult.length; i++){
             if(i!=winner){
