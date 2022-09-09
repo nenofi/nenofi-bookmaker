@@ -59,7 +59,7 @@ describe("BookmakerV01 Tests", function () {
     // lose = ethers.utils.parseEther("3.2")
 
     const Bookmaker = await ethers.getContractFactory("Bookmaker2V01")
-    bookmaker = await Bookmaker.deploy(neIDR.address, 1572305400)
+    bookmaker = await Bookmaker.deploy(neIDR.address, 1772305400)
     // bookmaker = await Bookmaker.deploy(neIDR.address, 1661709562) //tests will fail
 
     
@@ -112,6 +112,16 @@ describe("BookmakerV01 Tests", function () {
   // });
 
   it("set Winner", async function () {
+    const blockNumBefore = await ethers.provider.getBlockNumber();
+    const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+    const timestampBefore = blockBefore.timestamp;
+    console.log(timestampBefore)
+    await ethers.provider.send("evm_mine", [1782305400]); //fast forward
+    const blockNumAfter = await ethers.provider.getBlockNumber();
+    const blockAfter = await ethers.provider.getBlock(blockNumAfter);
+    const timestampAfter = blockAfter.timestamp;
+    console.log(timestampAfter)
+
     await bookmaker.setClaimable(true);
     await bookmaker.setWinner(1)
   });
@@ -122,9 +132,9 @@ describe("BookmakerV01 Tests", function () {
   });
 
   it("claim Winnings", async function () {
-    console.log(await neIDR.balanceOf(user2.address));
+    // console.log(await neIDR.balanceOf(user2.address));
     await bookmaker.connect(user2).claimWinnings();
-    console.log(await neIDR.balanceOf(user2.address));
+    // console.log(await neIDR.balanceOf(user2.address));
     // expect(await neIDR.balanceOf(user1.address)).to.be.equal(ethers.BigNumber.from("1633333333333333333333333"))
     // console.log(await neIDR.balanceOf(user1.address));
     // await expect(bookmaker.connect(user2).claimWinnings()).to.be.reverted;
