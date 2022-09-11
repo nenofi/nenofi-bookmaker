@@ -30,7 +30,7 @@ async function main() {
   const NEIDR_ADDRESS = "0x5d6771aF6066619e42E364E734Cd2F5cCbBF8211";
 
   const Bookmaker = await ethers.getContractFactory("BookmakerV01");
-  const bookmaker = await Bookmaker.deploy(NEIDR_ADDRESS, 1662305400);
+  const bookmaker = await Bookmaker.deploy(NEIDR_ADDRESS, 1663095600);
 
   console.log("bookmaker deployed to: " + bookmaker.address)
 
