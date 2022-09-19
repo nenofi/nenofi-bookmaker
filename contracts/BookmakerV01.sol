@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BookmakerV01 {
+    uint64 public gameStarts;
+    uint8 public winner; // 0 to bet for a win, 1 to bet for a draw, 2 to bet for a loss
+
     address public admin;
     address public betToken;
 
@@ -13,8 +16,6 @@ contract BookmakerV01 {
     uint256 public losersPot;
     uint256 public fee;
     uint256[3] public potPerResult;
-    uint256 public gameStarts;
-    uint8 public winner; // 0 to bet for a win, 1 to bet for a draw, 2 to bet for a loss
 
     bool public claimable;
  
@@ -26,7 +27,7 @@ contract BookmakerV01 {
         _;
     }
 
-    constructor(address _betToken, uint256 _gameStarts){
+    constructor(address _betToken, uint64 _gameStarts){
         admin = msg.sender;
         betToken = _betToken;
         gameStarts = _gameStarts;
