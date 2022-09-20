@@ -4,8 +4,9 @@ pragma solidity ^0.8.8;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BookmakerV01 {
-    uint64 public gameStarts;
+    bool public claimable;
     uint8 public winner; // 0 to bet for a win, 1 to bet for a draw, 2 to bet for a loss
+    uint64 public gameStarts;
 
     address public admin;
     address public betToken;
@@ -17,8 +18,6 @@ contract BookmakerV01 {
     uint256 public fee;
     uint256[3] public potPerResult;
 
-    bool public claimable;
- 
     event LogBet(address indexed better, uint256 amount, uint result);
     event LogClaim(address indexed claimer, uint256 amount);
 

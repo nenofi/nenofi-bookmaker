@@ -1,6 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require('dotenv').config();
 require("@nomiclabs/hardhat-etherscan");
+require("hardhat-gas-reporter");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -38,7 +39,7 @@ module.exports = {
         // url: "https://bsc-dataseed1.ninicoin.io/",
 
       },   
-    },
+    }, 
     ftmTestnet: {
       url: "https://rpc.testnet.fantom.network/",
       accounts: [process.env.PRIVATE_KEY],
