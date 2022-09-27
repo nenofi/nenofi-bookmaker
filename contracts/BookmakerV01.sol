@@ -8,7 +8,7 @@ contract BookmakerV01 {
     address public admin;
     address public betToken;
 
-    mapping(address => mapping(uint8 => uint256)) userBet; //maps address to result to stake. Represents the shares of the stakes if the address wins
+    mapping(address => mapping(uint8 => uint256)) public userBet; //maps address to result to stake. Represents the shares of the stakes if the address wins
 
     uint256 public totalPot;
     uint256 public losersPot;
