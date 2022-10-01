@@ -33,7 +33,6 @@ async function main() {
   console.log("bookmaker deployed to: " + bookmaker.address)
   console.log(await bookmaker.gameStarts())
 
-  
 
 }
 

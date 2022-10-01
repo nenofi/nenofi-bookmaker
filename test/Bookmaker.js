@@ -59,7 +59,7 @@ describe("BookmakerV01 Tests", function () {
     // lose = ethers.utils.parseEther("3.2")
 
     const Bookmaker = await ethers.getContractFactory("BookmakerV01")
-    bookmaker = await Bookmaker.deploy(neIDR.address, 1772305400)
+    bookmaker = await Bookmaker.deploy(neIDR.address, 1772305400, "Arsenal-Tottenham")
     // bookmaker = await Bookmaker.deploy(neIDR.address, 1661709562) //tests will fail
 
     
@@ -115,12 +115,12 @@ describe("BookmakerV01 Tests", function () {
     const blockNumBefore = await ethers.provider.getBlockNumber();
     const blockBefore = await ethers.provider.getBlock(blockNumBefore);
     const timestampBefore = blockBefore.timestamp;
-    console.log(timestampBefore)
+    // console.log(timestampBefore)
     await ethers.provider.send("evm_mine", [1782305400]); //fast forward
     const blockNumAfter = await ethers.provider.getBlockNumber();
     const blockAfter = await ethers.provider.getBlock(blockNumAfter);
     const timestampAfter = blockAfter.timestamp;
-    console.log(timestampAfter)
+    // console.log(timestampAfter)
 
     await bookmaker.setClaimable(true);
     await bookmaker.setWinner(0)
@@ -128,7 +128,7 @@ describe("BookmakerV01 Tests", function () {
 
   it("check Bookmaker fee Winner", async function () {
     expect(await bookmaker.fee()).to.be.equal(ethers.BigNumber.from("50000000000000000000000"));
-    console.log(await bookmaker.fee())
+    // console.log(await bookmaker.fee())
   });
 
   it("claim Winnings", async function () {
@@ -144,7 +144,16 @@ describe("BookmakerV01 Tests", function () {
     await bookmaker.connect(user4).claimWinnings();
     // console.log(await neIDR.balanceOf(user4.address))
     expect(await neIDR.balanceOf(user4.address)).to.be.equal(ethers.BigNumber.from("1316666666666666666666666"))
+    await bookmaker.claimFee();
+    await bookmaker.emergencyWithdraw(neIDR.address,await neIDR.balanceOf(bookmaker.address));
+    // console.log(await neIDR.balanceOf(bookmaker.address));
 
+  });
+
+  
+  it("reset state contract", async function () {
+    await bookmaker.newGame("Man Utd-Man City", 1792305400)
+    expect(await bookmaker.eventName()).to.be.equal("Man Utd-Man City")
   });
 });
 
