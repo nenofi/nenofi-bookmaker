@@ -34,7 +34,7 @@ describe("BookmakerV01 Tests", function () {
   it("Deploy Mock Tokens (neIDR)", async function () {
     [owner, user1, user2, user3, user4, exploiter, smpc] = await ethers.getSigners(4);
 
-    const netoken = await ethers.getContractFactory("MockToken");
+    const netoken = await ethers.getContractFactory("MockToken2");
     neIDR = await netoken.deploy('neIDR', 'neIDR', 18);
     await neIDR.deployed();
   });
@@ -60,6 +60,8 @@ describe("BookmakerV01 Tests", function () {
 
     const Bookmaker = await ethers.getContractFactory("BookmakerV01")
     bookmaker = await Bookmaker.deploy(neIDR.address, 1772305400, "Arsenal-Tottenham")
+    expect(await bookmaker.eventName()).to.be.equal("Arsenal-Tottenham")
+
     // bookmaker = await Bookmaker.deploy(neIDR.address, 1661709562) //tests will fail
 
     
@@ -151,9 +153,71 @@ describe("BookmakerV01 Tests", function () {
   });
 
   
-  it("reset state contract", async function () {
-    await bookmaker.newGame("Man Utd-Man City", 1792305400)
-    expect(await bookmaker.eventName()).to.be.equal("Man Utd-Man City")
-  });
+  // it("reset state contract", async function () {
+  //   await bookmaker.newGame("Man Utd-Man City", 1792305400)
+  //   expect(await bookmaker.eventName()).to.be.equal("Man Utd-Man City")
+  // });
+
+
+  // it("User1 make 1 mil bet on winning", async function () {
+  //   await neIDR.connect(user1).approve(bookmaker.address, MAX_INT) ;   
+  //   await bookmaker.connect(user1).bet(neIDR.address, ethers.BigNumber.from("1000000000000000000000000"), 0);
+
+  //   expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+  //   expect(await bookmaker.getUserBet(user1.address, 0)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+  // });
+
+  // it("User2 make 500k bet on draw", async function () {
+  //   await neIDR.connect(user2).approve(bookmaker.address, MAX_INT) ;   
+  //   await bookmaker.connect(user2).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 1);
+
+  //   expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("1500000000000000000000000"));
+  //   expect(await bookmaker.getUserBet(user2.address, 1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  // });
+
+  // it("User3 make 500k bet on losing", async function () {
+  //   await neIDR.connect(user3).approve(bookmaker.address, MAX_INT) ;   
+  //   await bookmaker.connect(user3).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 2);
+
+  //   expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("2000000000000000000000000"));
+  //   expect(await bookmaker.getUserBet(user3.address, 2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  // });
+
+  // it("User4 make 500k bet on winning", async function () {
+  //   await neIDR.connect(user4).approve(bookmaker.address, MAX_INT) ;   
+  //   await bookmaker.connect(user4).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 0);
+
+  //   // expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("2500000000000000000000000"));
+  //   expect(await bookmaker.getUserBet(user4.address, 0)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  // });
+
+
+  // it("check pot for winning", async function () {
+  //   expect(await bookmaker.getPotPerResult(0)).to.equal(ethers.BigNumber.from("1500000000000000000000000"));
+  // });
+
+  // it("check pot for draw", async function () {
+  //   expect(await bookmaker.getPotPerResult(1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  // });
+  
+  // it("check pot for losing", async function () {
+  //   expect(await bookmaker.getPotPerResult(2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+  // });
+
+  // it("set Winner", async function () {
+  //   const blockNumBefore = await ethers.provider.getBlockNumber();
+  //   const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  //   const timestampBefore = blockBefore.timestamp;
+  //   // console.log(timestampBefore)
+  //   await ethers.provider.send("evm_mine", [1802305400]); //fast forward
+  //   const blockNumAfter = await ethers.provider.getBlockNumber();
+  //   const blockAfter = await ethers.provider.getBlock(blockNumAfter);
+  //   const timestampAfter = blockAfter.timestamp;
+  //   // console.log(timestampAfter)
+
+  //   await bookmaker.setClaimable(true);
+  //   await bookmaker.setWinner(0)
+  // });
+
 });
 

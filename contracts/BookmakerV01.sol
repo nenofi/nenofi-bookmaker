@@ -69,11 +69,6 @@ contract BookmakerV01 {
 
         uint256 userWinnings = losersPot * userBet[msg.sender][winner] / potPerResult[winner];
         IERC20(betToken).transfer(msg.sender, userWinnings + userBet[msg.sender][winner]);
-        userBet[msg.sender][0] = 0;
-        userBet[msg.sender][1] = 0;
-        userBet[msg.sender][2] = 0;
-
-
         emit LogClaim(msg.sender, userWinnings);
     }
 
@@ -95,19 +90,6 @@ contract BookmakerV01 {
 
     function emergencyWithdraw(address _token, uint256 _amount) external onlyAdmin{
         IERC20(_token).transfer(admin, _amount);
-    }
-
-    function newGame(string memory _eventName, uint256 _gameStarts) external onlyAdmin{
-        require(IERC20(betToken).balanceOf(address(this)) == 0, "BOOKMAKER: CONTRACT IS NOT EMPTY");
-        totalPot = 0;
-        losersPot = 0;
-        fee = 0; 
-        potPerResult[0] = 0;
-        potPerResult[1] = 0;
-        potPerResult[2] = 0;
-        claimable = false;
-        gameStarts = _gameStarts;
-        eventName = _eventName;
     }
     
 }
