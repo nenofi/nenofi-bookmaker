@@ -8,6 +8,57 @@ const { expect } = require("chai");
 const { AbiCoder } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
 
+async function getPermitSignature(signer, token, spender, value, deadline) {
+  const [nonce, name, version, chainId] = await Promise.all([
+    token.nonces(signer.address),
+    token.name(),
+    "1",
+    signer.getChainId(),
+  ])
+
+  return ethers.utils.splitSignature(
+    await signer._signTypedData(
+      {
+        name,
+        version,
+        chainId,
+        verifyingContract: token.address,
+      },
+      {
+        Permit: [
+          {
+            name: "owner",
+            type: "address",
+          },
+          {
+            name: "spender",
+            type: "address",
+          },
+          {
+            name: "value",
+            type: "uint256",
+          },
+          {
+            name: "nonce",
+            type: "uint256",
+          },
+          {
+            name: "deadline",
+            type: "uint256",
+          },
+        ],
+      },
+      {
+        owner: signer.address,
+        spender,
+        value,
+        nonce,
+        deadline,
+      }
+    )
+  )
+}
+
 describe("BookmakerV01 Tests", function () {
 
 
@@ -18,7 +69,7 @@ describe("BookmakerV01 Tests", function () {
   let user4;
   let exploiter;
   let smpc
-
+  let signer;
   let neIDR;
   let DAI;
 
@@ -69,48 +120,58 @@ describe("BookmakerV01 Tests", function () {
   });
 
   it("User1 make 1 mil bet on winning", async function () {
-    await neIDR.connect(user1).approve(bookmaker.address, MAX_INT) ;   
-    await bookmaker.connect(user1).bet(neIDR.address, ethers.BigNumber.from("1000000000000000000000000"), 0);
+    // await neIDR.connect(user1).approve(bookmaker.address, MAX_INT) ;   
+    // await bookmaker.connect(user1).bet(ethers.BigNumber.from("1000000000000000000000000"), 0);
+    const deadline = ethers.constants.MaxUint256
+    // console.log(neIDR)
+    const { v, r, s } = await getPermitSignature(
+      user1,
+      neIDR,
+      bookmaker.address,
+      ethers.BigNumber.from("1000000000000000000000000"),
+      deadline
+    )
+    await bookmaker.connect(user1).betWithPermit(ethers.BigNumber.from("1000000000000000000000000"), deadline,0, v, r, s)
 
     expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
-    expect(await bookmaker.getUserBet(user1.address, 0)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
+    expect(await bookmaker.userBet(user1.address, 0)).to.equal(ethers.BigNumber.from("1000000000000000000000000"));
   });
 
   it("User2 make 500k bet on draw", async function () {
     await neIDR.connect(user2).approve(bookmaker.address, MAX_INT) ;   
-    await bookmaker.connect(user2).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 1);
+    await bookmaker.connect(user2).bet(ethers.BigNumber.from("500000000000000000000000"), 1);
 
     expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("1500000000000000000000000"));
-    expect(await bookmaker.getUserBet(user2.address, 1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+    expect(await bookmaker.userBet(user2.address, 1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
   });
 
   it("User3 make 500k bet on losing", async function () {
     await neIDR.connect(user3).approve(bookmaker.address, MAX_INT) ;   
-    await bookmaker.connect(user3).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 2);
+    await bookmaker.connect(user3).bet(ethers.BigNumber.from("500000000000000000000000"), 2);
 
     expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("2000000000000000000000000"));
-    expect(await bookmaker.getUserBet(user3.address, 2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+    expect(await bookmaker.userBet(user3.address, 2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
   });
 
   it("User4 make 500k bet on winning", async function () {
     await neIDR.connect(user4).approve(bookmaker.address, MAX_INT) ;   
-    await bookmaker.connect(user4).bet(neIDR.address, ethers.BigNumber.from("500000000000000000000000"), 0);
+    await bookmaker.connect(user4).bet(ethers.BigNumber.from("500000000000000000000000"), 0);
 
     // expect(await neIDR.balanceOf(bookmaker.address)).to.equal(ethers.BigNumber.from("2500000000000000000000000"));
-    expect(await bookmaker.getUserBet(user4.address, 0)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+    expect(await bookmaker.userBet(user4.address, 0)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
   });
 
 
   it("check pot for winning", async function () {
-    expect(await bookmaker.getPotPerResult(0)).to.equal(ethers.BigNumber.from("1500000000000000000000000"));
+    expect(await bookmaker.potPerResult(0)).to.equal(ethers.BigNumber.from("1500000000000000000000000"));
   });
 
   it("check pot for draw", async function () {
-    expect(await bookmaker.getPotPerResult(1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+    expect(await bookmaker.potPerResult(1)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
   });
   
   it("check pot for losing", async function () {
-    expect(await bookmaker.getPotPerResult(2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
+    expect(await bookmaker.potPerResult(2)).to.equal(ethers.BigNumber.from("500000000000000000000000"));
   });
 
   it("set Winner", async function () {

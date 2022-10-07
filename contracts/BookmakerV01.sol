@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./interface/IERC20Permit.sol";
 
 contract BookmakerV01 {
 
@@ -36,10 +36,10 @@ contract BookmakerV01 {
         eventName = _eventName;
     }
 
-    function bet(address _betToken, uint256 _amount, uint8 _result) external{
-        require(_betToken == betToken, "BOOKMAKER: YOUR TOKEN AREN'T ACCEPTED");
+    function bet(uint256 _amount, uint8 _result) external{
         require(block.timestamp < gameStarts, "BOOKMAKER: BETS ARE NOT ACCEPTED");
-        IERC20(_betToken).transferFrom(msg.sender, address(this), _amount);
+        
+        IERC20Permit(betToken).transferFrom(msg.sender, address(this), _amount);
         userBet[msg.sender][_result] += _amount;
         potPerResult[_result] += _amount;
         totalPot += _amount;
@@ -47,8 +47,21 @@ contract BookmakerV01 {
         emit LogBet(msg.sender, _amount, _result);
     }
 
+    function betWithPermit(uint256 _amount, uint256 _deadline, uint8 _result, uint8 v, bytes32 r, bytes32 s) external{
+        require(block.timestamp < gameStarts, "BOOKMAKER: BETS ARE NOT ACCEPTED");
+
+        IERC20Permit(betToken).permit(msg.sender, address(this), _amount, _deadline, v, r, s);
+        IERC20Permit(betToken).transferFrom(msg.sender, address(this), _amount);
+        userBet[msg.sender][_result] += _amount;
+        potPerResult[_result] += _amount;
+        totalPot += _amount;
+
+        emit LogBet(msg.sender, _amount, _result);
+
+    }
+
     function getTotalPot() external view returns (uint256){
-        return IERC20(betToken).balanceOf(address(this));
+        return IERC20Permit(betToken).balanceOf(address(this));
     }
 
     function setWinner(uint8 _winner) external onlyAdmin{
@@ -68,16 +81,8 @@ contract BookmakerV01 {
         require(claimable == true, "BOOKMAKER: STATE IS NOT CLAIMABLE");
 
         uint256 userWinnings = losersPot * userBet[msg.sender][winner] / potPerResult[winner];
-        IERC20(betToken).transfer(msg.sender, userWinnings + userBet[msg.sender][winner]);
+        IERC20Permit(betToken).transfer(msg.sender, userWinnings + userBet[msg.sender][winner]);
         emit LogClaim(msg.sender, userWinnings);
-    }
-
-    function getUserBet(address _address, uint8 _result) external view returns (uint256){
-        return userBet[_address][_result];
-    }
-
-    function getPotPerResult(uint8 _result) external view returns (uint256){
-        return potPerResult[_result];
     }
 
     function setClaimable(bool _claimable) external onlyAdmin{
@@ -85,11 +90,11 @@ contract BookmakerV01 {
     }
 
     function claimFee() external onlyAdmin{
-        IERC20(betToken).transfer(admin, fee);
+        IERC20Permit(betToken).transfer(admin, fee);
     }
 
     function emergencyWithdraw(address _token, uint256 _amount) external onlyAdmin{
-        IERC20(_token).transfer(admin, _amount);
+        IERC20Permit(_token).transfer(admin, _amount);
     }
     
 }
