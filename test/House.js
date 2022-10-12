@@ -201,7 +201,4 @@ describe("House Bet Tests", function () {
 
     });
 
-
-
-
 })
