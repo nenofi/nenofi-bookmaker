@@ -13,12 +13,12 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const NEIDR_ADDRESS = "0x5d6771aF6066619e42E364E734Cd2F5cCbBF8211";
 
-  let gamestarts = Math.floor(new Date('October 9, 2022 22:30:00 GMT+7').getTime() / 1000)
+  let gamestarts = Math.floor(new Date('October 12, 2022 02:00:00 GMT+7').getTime() / 1000)
 
 
 
   const Bookmaker = await ethers.getContractFactory("BookmakerV01");
-  var bookmaker = await Bookmaker.deploy(NEIDR_ADDRESS, gamestarts, "Arsenal-Liverpool");
+  var bookmaker = await Bookmaker.deploy(NEIDR_ADDRESS, gamestarts, "Milan-Chelsea");
 
   console.log("bookmaker deployed to: " + bookmaker.address)
   console.log(await bookmaker.eventName())

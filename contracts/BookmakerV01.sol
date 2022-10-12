@@ -60,6 +60,22 @@ contract BookmakerV01 {
 
     }
 
+    function batchBet(uint256[] memory _amount) public {
+        require(block.timestamp < gameStarts, "BOOKMAKER: BETS ARE NOT ACCEPTED");
+
+        uint256 thisAmount;
+        for(uint8 i=0; i < potPerResult.length; i++){
+            IERC20Permit(betToken).transferFrom(msg.sender, address(this), _amount[i]);
+            userBet[msg.sender][i] += _amount[i];
+            potPerResult[i] += _amount[i];
+            thisAmount += _amount[i];
+
+            emit LogBet(msg.sender, _amount[i], i);
+
+        }
+        totalPot += thisAmount;
+    }
+
     function getTotalPot() external view returns (uint256){
         return IERC20Permit(betToken).balanceOf(address(this));
     }
@@ -67,7 +83,7 @@ contract BookmakerV01 {
     function setWinner(uint8 _winner) external onlyAdmin{
         require(block.timestamp > gameStarts, "BOOKMAKER: GAME HAS NOT STARTED");
         winner = _winner;
-        for(uint i=0; i < potPerResult.length; i++){
+        for(uint8 i=0; i < potPerResult.length; i++){
             if(i!=winner){
                 losersPot += potPerResult[i];
             }
