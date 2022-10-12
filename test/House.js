@@ -149,9 +149,9 @@ describe("House Bet Tests", function () {
 
     it("User3 make 15k bet on away", async function () {
         await neIDR.connect(user3).approve(bookmaker.address, MAX_INT) ;   
-        await bookmaker.connect(user3).bet(ethers.BigNumber.from("1500000000000000000000"), 2);
+        await bookmaker.connect(user3).bet(ethers.BigNumber.from("15000000000000000000000"), 2);
 
-        expect(await bookmaker.userBet(user3.address, 2)).to.equal(ethers.BigNumber.from("1500000000000000000000"));
+        expect(await bookmaker.userBet(user3.address, 2)).to.equal(ethers.BigNumber.from("15000000000000000000000"));
     });
 
     it("check pot for home", async function () {
@@ -163,7 +163,45 @@ describe("House Bet Tests", function () {
     });
 
     it("check pot for away", async function () {
-        expect(await bookmaker.potPerResult(2)).to.equal(ethers.BigNumber.from("13500000000000000000000"));
+        expect(await bookmaker.potPerResult(2)).to.equal(ethers.BigNumber.from("135000000000000000000000"));
     });
+
+    it("set Winner", async function () {
+        const blockNumBefore = await ethers.provider.getBlockNumber();
+        const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+        const timestampBefore = blockBefore.timestamp;
+        // console.log(timestampBefore)
+        await ethers.provider.send("evm_mine", [1782305400]); //fast forward
+        const blockNumAfter = await ethers.provider.getBlockNumber();
+        const blockAfter = await ethers.provider.getBlock(blockNumAfter);
+        const timestampAfter = blockAfter.timestamp;
+        // console.log(timestampAfter)
+
+        await bookmaker.setClaimable(true);
+        await bookmaker.setWinner(2)
+    });
+
+    it("check Bookmaker fee Winner", async function () {
+        expect(await bookmaker.fee()).to.be.equal(ethers.BigNumber.from("18000000000000000000000"));
+        // console.log(await bookmaker.fee())
+    });
+
+    it("claim Winnings", async function () {
+        await expect(bookmaker.connect(user1).claimWinnings()).to.be.reverted;
+        await expect(bookmaker.connect(user2).claimWinnings()).to.be.reverted;
+        await bookmaker.connect(user3).claimWinnings();
+        await bookmaker.connect(house).claimWinnings();
+        expect(await neIDR.balanceOf(user3.address)).to.be.above(ethers.BigNumber.from("1000000000000000000000000"))
+        expect(await neIDR.balanceOf(house.address)).to.be.above(ethers.BigNumber.from("1000000000000000000000000"))
+    });
+
+    it("claim fee", async function () {
+        await bookmaker.claimFee();
+        expect(await neIDR.balanceOf(owner.address)).to.be.above(ethers.BigNumber.from("0"))
+
+    });
+
+
+
 
 })
