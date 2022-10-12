@@ -10,6 +10,8 @@ require('dotenv').config();
 
 const {ethers} = require("hardhat");
 const neIDRabi = require("./abi/ERC20.json");
+const bookmakerAbi = require("./abi/BookmakerV01.json");
+
 
 
 async function main() {
@@ -17,7 +19,7 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const NEIDR_ADDRESS = "0x5d6771aF6066619e42E364E734Cd2F5cCbBF8211";
 
-  let gamestarts = Math.floor(new Date('October 12, 2022 02:00:00 GMT+7').getTime() / 1000)
+  let gamestarts = Math.floor(new Date('October 13, 2022 02:00:00 GMT+7').getTime() / 1000)
 
 
 
@@ -25,19 +27,23 @@ async function main() {
   var bookmaker = await Bookmaker.deploy(NEIDR_ADDRESS, gamestarts, "Milan-Chelsea");
 
   console.log("bookmaker deployed to: " + bookmaker.address)
-  console.log(await bookmaker.eventName())
-  console.log(await bookmaker.gameStarts())
+  console.log(await bookmaker.admin())
+  // console.log(await bookmaker.eventName())
+  // console.log(await bookmaker.gameStarts())
 
   const provider = new ethers.providers.Web3Provider(network.provider);
   const managerWallet = new ethers.Wallet(process.env.MANAGER_KEY)
   const managerAccount = managerWallet.connect(provider);
-  // console.log(managerAccount)
+  console.log(managerAccount.address)
   
   const neIDR = new ethers.Contract(NEIDR_ADDRESS, neIDRabi.abi, managerAccount)
+  await neIDR.connect(managerAccount).approve(bookmaker.address, ethers.constants.MaxUint256);
   console.log(await neIDR.balanceOf(managerAccount.address))
-  console.log("TRASNFERING")
-  await neIDR.transfer('0x5d6771aF6066619e42E364E734Cd2F5cCbBF8211', ethers.BigNumber.from("500000000000000000000000"))
+  await bookmaker.connect(managerAccount).bet(ethers.BigNumber.from("500000000000000000000000"), 0)
   console.log(await neIDR.balanceOf(managerAccount.address))
+  // console.log("TRASNFERING")
+  // await neIDR.transfer('0x5d6771aF6066619e42E364E734Cd2F5cCbBF8211', ethers.BigNumber.from("500000000000000000000000"))
+  // console.log(await neIDR.balanceOf(managerAccount.address))
 
 
 
