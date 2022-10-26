@@ -19,14 +19,14 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const NEIDR_ADDRESS = "0x5d6771aF6066619e42E364E734Cd2F5cCbBF8211";
 
-  let gamestarts = Math.floor(new Date('October 16, 2022 20:00:00 GMT+7').getTime() / 1000)
+  let gamestarts = Math.floor(new Date('November 28, 2022 20:00:00 GMT+7').getTime() / 1000)
   console.log(gamestarts)
 
 
-  // const Bookmaker = await ethers.getContractFactory("BookmakerV01");
-  // var bookmaker = await Bookmaker.deploy(NEIDR_ADDRESS, gamestarts, "ManUtd-Newcastle");
+  const Bookmaker = await ethers.getContractFactory("BookmakerV01");
+  var bookmaker = await Bookmaker.deploy(NEIDR_ADDRESS, gamestarts, "ManUtd-Newcastle");
   // tx1.wait()
-  // console.log("bookmaker deployed to: " + bookmaker.address)
+  console.log("bookmaker deployed to: " + bookmaker.address)
 
 
   const provider = new ethers.providers.Web3Provider(network.provider);
@@ -35,7 +35,7 @@ async function main() {
   console.log(managerAccount.address)
   
   const neIDR = new ethers.Contract(NEIDR_ADDRESS, neIDRabi.abi, managerAccount)
-  const bookmaker = new ethers.Contract('0x177f0dD8D4a605288a2570f4cdf83dEF23a4bcD3', bookmakerAbi.abi, managerAccount)
+  // const bookmaker = new ethers.Contract('0x177f0dD8D4a605288a2570f4cdf83dEF23a4bcD3', bookmakerAbi.abi, managerAccount)
   await neIDR.connect(managerAccount).approve(bookmaker.address, ethers.constants.MaxUint256);
   // console.log(await neIDR.balanceOf(managerAccount.address))
   var decimals = "000000000000000000"
@@ -51,7 +51,7 @@ async function main() {
   console.log(home)
   console.log(draw)
   console.log(away)
-  tx3 = await bookmaker.connect(managerAccount).batchBet([ethers.BigNumber.from(home),ethers.BigNumber.from(draw),ethers.BigNumber.from(away)], {gasLimit: 500000, nonce: 44 })
+  tx3 = await bookmaker.connect(managerAccount).batchBet([ethers.BigNumber.from(home),ethers.BigNumber.from(draw),ethers.BigNumber.from(away)], {gasLimit: 500000})
   tx3.wait()
 
 

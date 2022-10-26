@@ -22,7 +22,7 @@ contract BookmakerV01 {
 
     event LogBet(address indexed better, uint256 amount, uint result);
     event LogClaim(address indexed claimer, uint256 amount);
-    event logBatchBet(address indexed better, uint256 amount0, uint256 amount1, uint256 amount2);
+    event logBatchBet(address indexed better, uint256[] amount);
 
     modifier onlyAdmin(){
         require(msg.sender == admin, "BOOKMAKER: NOT ADMIN");
@@ -73,7 +73,7 @@ contract BookmakerV01 {
         }
         totalPot += thisAmount;
 
-        event logBatchBet(address indexed better, uint256 amount0, uint256 amount1, uint256 amount2);
+        emit logBatchBet(msg.sender, _amount);
     }
 
     function getTotalPot() external view returns (uint256){
