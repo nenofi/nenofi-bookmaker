@@ -13,7 +13,7 @@ pragma solidity ^0.8.8;
 import "./interface/IERC20Permit.sol";
 
 contract Bookmaker2V01 {
-    
+
     address public admin;
     address public betToken;
 
@@ -22,11 +22,13 @@ contract Bookmaker2V01 {
     uint256 public totalPot;
     uint256 public losersPot;
     uint256 public fee;
-    uint256[2] public potPerResult;
     uint256 public gameStarts;
+    uint256[2] public potPerResult;
+
+    string public eventName;
+    bool public claimable;
     uint8 public winner; 
 
-    bool public claimable;
  
     event LogBet(address indexed better, uint256 amount, uint result);
     event LogClaim(address indexed claimer, uint256 amount);
